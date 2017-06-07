@@ -1,0 +1,144 @@
+<html>
+  <canvas id = "canvas" width = "800" height = "600">
+  </canvas>
+  <script>
+
+    var canvas;
+    var ctx;
+    var ballX;
+    var ballY;
+    var groundX;
+    var groundY;
+    var groundHeight;
+    var groundWidth;
+    var ballRadius;
+    var gravity;
+    var defaultGravity = 1;
+    var ballVelocityY = 0;
+    var ballValocityX = 0;
+    var ballAccX = 0;
+    var ballAccY = 0;
+    var gameOn = 0;
+    var fps = 20;
+    var airY=0.05;
+    var airX=0.05;
+
+    function calculateMousePos(evt) {
+
+      var rect = canvas.getBoundingClientRect();
+      var root = document.documentElement;
+      var mouseX = evt.clientX - rect.left - root.scrollLeft;
+      var mouseY = evt.clientY - rect.top - root.scrollTop;
+      return {
+          x:mouseX,
+          y:mouseY 
+      }
+
+    }
+
+    window.onload = function() {
+
+      canvas = document.getElementById("canvas");
+      ctx = canvas.getContext("2d");
+
+      groundX = 0;
+      groundY = canvas.height - 50; 
+      groundHeight = 30;
+      groundWidth = canvas.width;
+      ballX = canvas.width/2;
+      ballRadius = 50;
+      ballY = groundY - ballRadius;
+
+      drawRect(0,0,canvas.width,canvas.height,'black');
+
+      canvas.addEventListener("click", function(evt){
+                    var mouse = calculateMousePos(evt);
+                    addAccelaration(mouse.x , mouse.y);
+                     resistance();
+                    gameOn = 1;})
+     
+
+      setInterval(function() {
+                move();
+                draw();
+      }, 1000/fps);
+
+    }
+    //draws the things, use variables only so that 
+    function draw() {
+      drawRect(0,0,canvas.width,canvas.height,'black');
+      drawRect(groundX,groundY,groundWidth,groundHeight,'white');
+      drawBall(ballX, ballY, ballRadius, 'white');
+      
+    }
+
+    function move() {
+      if(ballY + ballRadius >= groundY){
+        gravity = 0;
+      }else{
+        gravity = defaultGravity;
+      }
+
+      ballVelocityY += gravity;
+      ballY += ballVelocityY;
+      ballX += ballValocityX;
+
+      if(gameOn == 1){
+        if(ballY >= groundY - ballRadius){
+          ballVelocityY = gravity - ballVelocityY ;
+        }
+        if((ballX + ballRadius >= canvas.width) || (ballX - ballRadius <= 0) ){
+            ballValocityX = -ballValocityX;
+        }
+      }
+
+    }
+    
+    function drawBall(X, Y, radius, color) {
+	    ctx.fillStyle = color;
+	    ctx.beginPath();
+	    ctx.arc(X, Y, radius, 0,Math.PI*2,true);
+	    ctx.fill();
+    }
+
+    function drawRect(leftX,topY, width,height, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(leftX,topY, width,height);
+    }
+
+    
+
+    function addAccelaration(coorX, coorY) {
+      if(coorX > (ballX - ballRadius) && coorX < ballX + (ballRadius) 
+        && coorY > (ballY - ballRadius) && coorY < (ballY + ballRadius)){
+
+        ballValocityX += (ballX - coorX)/20;
+        ballVelocityY += (ballY - coorY)/7; 
+         
+      }
+    }
+
+    function resistance(){
+      if(ballValocityX != 0  ){
+        if(ballValocityX > 0){
+          ballValocityX -= airX;
+        }
+        else
+          ballValocityX += airX; 
+      }
+    
+      else if(ballVelocityY != 0){
+        if(ballVelocityY > 0.1){
+          ballVelocityY -= airY;
+            if( ballVelocityY < 5)
+               ballVelocityY =0;
+        }
+        else if(ballVelocityY < -0.1){
+         ballVelocityY += airY; 
+            if( ballVelocityY > -5)
+               ballVelocityY = 0;
+        }
+      }
+    }
+  </script>
+</html>
